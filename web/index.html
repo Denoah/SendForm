@@ -18,10 +18,15 @@
 </head>
 <body>
 <script>
+    var myList;
+    var arr;
+    var file;
     var html = '<div id="windows"><form method="post" id="uploadForm" action="javascript:void(null);" onsubmit="upload()"><br/><input type="text" name="description"/><br/><input type="file" name="data"/><br/><input type="submit"/><br/></form></div>';
-    var html2 = '<div>Файл отправлен</div>';
+    var html2 = '<div id="win" style="border:1px solid #A4BED4; background-color:white;width:380px;height:460px;">Файл отправлен</div><div id="control"><input type="button" value="ok" onclick="compliteXML()"/></div>';
     var myWins = new dhtmlXWindows();
     var windowOK;
+    var fromKPTSelectedItems;
+
 
     dhtmlxEvent(window, "load", function () {
         var layout = new dhtmlXLayoutObject(document.body, "2U");
@@ -34,29 +39,53 @@
 
         toolbar.attachEvent("onclick", function (id) {
             if (id == "ok") {
-
-                windowOK = myWins.createWindow("loadFile", 320, 100, 400, 200);
+                windowOK = myWins.createWindow("loadFile", 320, 100, 400, 600);
                 windowOK.attachHTMLString(html);
             }
-        })
+        });
+
+
     });
 
     function upload() {
         var msg = $('#uploadForm')[0];
         var fd = new FormData(msg);
+
+
         $.ajax({
             type: 'POST',
             url: '/root/upload',
             data: fd,
             processData: false,
             contentType: false,
-            success: function() {
+            success: function(text) {
                 windowOK.attachHTMLString(html2);
+                arr = text.split(';');
+                file = arr.splice(0,1);
+
+                dhtmlx.DataDriver.my_jsarray= dhtmlx.extend(
+                        dhtmlx.extend({},dhtmlx.DataDriver.jsarray),{
+                            getDetails:function(data){
+                                var result = {};
+                                result.id = data;
+                                return result;
+                            }
+                        });
+                myList = new dhtmlXList({
+                    container:"win",
+                    template:"#id#"
+                });
+
+                myList.parse(arr, "my_jsarray");
+
+                console.log();
             }
-
         })
+    }
 
-
+    function compliteXML() {
+        fromKPTSelectedItems = myList.getSelected();
+        console.log(fromKPTSelectedItems);
     }
 </script>
 
